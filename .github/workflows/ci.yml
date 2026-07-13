@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.5-pg18-trixie
+        env:
+          POSTGRES_DB: infocity
+          POSTGRES_USER: infocity
+          POSTGRES_PASSWORD: infocity
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U infocity -d infocity"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PYTHONPATH: src
+      POSTGRES_DB: infocity
+      POSTGRES_USER: infocity
+      POSTGRES_PASSWORD: infocity
+      POSTGRES_HOST: localhost
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          version: "0.11.17"
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.14
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Apply migrations
+        run: uv run alembic upgrade head
+
+      - name: Ruff check
+        run: uv run ruff check src
+
+      - name: Ruff format
+        run: uv run ruff format --check src
+
+      - name: Mypy
+        run: uv run mypy src
+
+      - name: Pytest
+        if: ${{ hashFiles('tests/**/*.py', 'src/**/test_*.py') != '' }}
+        run: uv run pytest

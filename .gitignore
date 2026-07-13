@@ -1,0 +1,21 @@
+*.pyc
+__pycache__/
+.idea/
+
+# Virtualenv
+venv/
+.venv/
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Prepared dataset
+data/*
+!data/questions.csv
+
+# Env files
+.env
+src/.env.example
+!src/.env.example
