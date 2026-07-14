@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.5-pg18-trixie
+    container_name: infocity_postgres_prod
+    restart: always
+    env_file:
+      - ./src/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8.2-alpine
+    container_name: infocity_redis_prod
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  backend:
+    image: infocity-backend:prod
+    container_name: infocity_backend_prod
+    build:
+      context: .
+      dockerfile: etc/docker/Dockerfile
+      args:
+        EMBEDDING_MODEL_NAME: ${EMBEDDING_MODEL_NAME:-intfloat/multilingual-e5-small}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+    restart: always
+    env_file:
+      - ./src/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/docs')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  celery-worker:
+    image: infocity-backend:prod
+    container_name: infocity_celery_worker_prod
+    restart: always
+    env_file:
+      - ./src/.env
+    command: celery --app services.celery:celery_app worker --loglevel INFO --concurrency 1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
