@@ -4,6 +4,10 @@ FastAPI service for semantic search over question-answer pairs from a prepared
 CSV file. PostgreSQL with pgvector stores embeddings and search statistics,
 while Celery and Redis handle background indexing.
 
+> **Note:** For simplicity, a single PostgreSQL instance with pgvector is used
+> both as the vector store and as the relational store for indexing metadata
+> and search statistics.
+
 ## Development
 
 ```bash
