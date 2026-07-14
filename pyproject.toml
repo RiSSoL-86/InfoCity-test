@@ -7,7 +7,7 @@ requires-python = ">=3.14"
 dependencies = [
     "aiofiles>=25.1.0",
     "alembic>=1.18.5",
-    "asgiref>=3.11.1",
+    "asgiref>=3.12.1",
     "asyncpg>=0.30.0",
     "celery[redis]>=5.6.3",
     "fastapi>=0.139.0",
@@ -24,11 +24,13 @@ dependencies = [
 [dependency-groups]
 dev = [
     "celery-types>=0.26.0",
+    "factory-boy>=3.3.3",
     "httpx>=0.28.1",
     "mypy>=2.3.0",
     "pre-commit>=4.6.0",
     "pytest>=9.0.3",
     "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
     "ruff>=0.15.21",
     "types-aiofiles>=25.1.0",
 ]
@@ -98,3 +100,20 @@ module = [
     "conftest",
 ]
 ignore_errors = true
+
+# --- PYTEST ---
+[tool.pytest.ini_options]
+addopts = "--strict-markers --cov=src --cov-report=term-missing"
+asyncio_mode = "auto"
+pythonpath = ["src"]
+testpaths = ["src"]
+
+# --- COVERAGE ---
+[tool.coverage.run]
+omit = [
+    "src/**/tests/*",
+    "src/conftest.py",
+]
+
+[tool.coverage.report]
+show_missing = true

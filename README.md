@@ -35,6 +35,7 @@ Stop it with `make prod-down`.
 ```text
 make install             Install local dependencies
 make pre-commit.install  Install Git hooks
+make test                Run tests with coverage
 make migration.create name="migration name"
 make migration.down      Roll back one development migration
 make lint                Format, lint, and type-check the code

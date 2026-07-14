@@ -33,6 +33,9 @@ prod-migration.up:  ## Apply all production migrations
 	docker compose --env-file src/.env -f compose.prod.yml run --rm backend alembic upgrade head
 
 # --- Code quality ---
+test:  ## Run tests with coverage in Docker
+	docker compose -f compose.dev.yml run --rm --no-deps backend pytest
+
 lint:  ## Format, lint, and type-check
 	uv run ruff format src/
 	uv run ruff check src/ --fix
