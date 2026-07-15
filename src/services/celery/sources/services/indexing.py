@@ -23,8 +23,9 @@ class IndexingSourcesCeleryService(BaseCeleryService):
         sources_repository = SourcesRepository(session=self.session)
         answers_repository = AnswersRepository(session=self.session)
 
-        data = {"status": Status.STARTED, "error": None}
-        source = await sources_repository.update(pk=source_id, data=data)
+        source = await sources_repository.update(
+            pk=source_id, data={"status": Status.STARTED, "error": None}
+        )
         if source is None:
             raise ValueError(f"Source not found: {source_id}")
 
@@ -63,14 +64,14 @@ class IndexingSourcesCeleryService(BaseCeleryService):
                 "deleted_count": deleted_count,
             }
             await sources_repository.update(
-                source_id,
-                {"status": Status.SUCCESS, "error": None, **result},
+                pk=source_id,
+                data={"status": Status.SUCCESS, "error": None, **result},
             )
             return result
         except Exception as error:
             await sources_repository.update(
-                source_id,
-                {
+                pk=source_id,
+                data={
                     "status": Status.FAILURE,
                     "error": f"{type(error).__name__}: {error}",
                 },
