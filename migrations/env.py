@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 from logging.config import fileConfig
 from typing import TYPE_CHECKING
